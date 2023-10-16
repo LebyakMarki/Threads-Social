@@ -37,6 +37,7 @@ export async function createThread({text, author, communityId, path}: Params) {
 export async function fetchPosts(pageNumber = 1, pageSize=20) {
     connectToDB();
 
+  // Calculate the number of posts to skip based on the page number and page size.
     const skipAmount = (pageNumber - 1) * pageSize;
 
     const postsQuery = Thread.find({parentId: {$in: [null, undefined]}})
@@ -52,9 +53,14 @@ export async function fetchPosts(pageNumber = 1, pageSize=20) {
         }
     });
 
-    const totalPostsCount = await Thread.countDocuments({parentId: {$in: [null, undefined]}})
+    // Count the total number of top-level posts (threads) i.e., threads that are not comments.
+    const totalPostsCount = await Thread.countDocuments({
+        parentId: { $in: [null, undefined] },
+    }); // Get the total count of posts
+
     const posts = await postsQuery.exec();
+
     const isNext = totalPostsCount > skipAmount + posts.length;
 
-    return {posts, isNext }
+    return { posts, isNext };
 }
