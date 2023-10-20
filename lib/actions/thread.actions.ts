@@ -34,6 +34,31 @@ export async function createThread({text, author, communityId, path}: Params) {
     
 }
 
+export async function addComment(threadId: string, commentText: string, userId: string, path: string) {
+    connectToDB();
+
+    try {
+        const originalThread = await Thread.findById(threadId);
+        if (!originalThread) {
+            throw new Error("Can't find original thread!")
+        }
+
+        const commentThread = new Thread({
+            text: commentText,
+            author: userId,
+            parentId: threadId
+        });
+
+        const savedCommentThread = await commentThread.save();
+        originalThread.children.push(savedCommentThread._id);
+        await originalThread.save();
+       
+        revalidatePath(path);
+    } catch (error) {
+        throw new Error(`Error commenting thread: ${error}`);
+    }
+}
+
 export async function fetchPosts(pageNumber = 1, pageSize=20) {
     connectToDB();
 
