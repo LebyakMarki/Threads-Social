@@ -14,14 +14,16 @@ async function Page({ params }: { params: { id: string } }) {
   const user = await currentUser();
   if (!user) return null;
 
+  const ownerUserInfo = await fetchUser(user.id);
+  if (!ownerUserInfo?.onboarded) redirect("/onboarding");
+
   const userInfo = await fetchUser(params.id);
-  if (!userInfo?.onboarded) redirect("/onboarding");
 
   return (
     <section>
       <ProfileHeader
-        accountId={userInfo.id}
-        authUserId={user.id}
+        accountId={params.id}
+        authUserId={params.id}
         name={userInfo.name}
         username={userInfo.username}
         imgUrl={userInfo.image}
